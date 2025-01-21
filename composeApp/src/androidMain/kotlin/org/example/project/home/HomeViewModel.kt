@@ -1,24 +1,30 @@
 package org.example.project.home
 
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import org.example.project.ProductsApi
+import org.example.domain.repository.MoviesRepository
 import org.example.project.RequestState
 
-class HomeViewModel : ViewModel() {
-    private var _requestState: MutableState<RequestState> = mutableStateOf(RequestState.Idle)
-    val requestState: State<RequestState> = _requestState
+class HomeViewModel(private val repository: MoviesRepository) : ViewModel() {
 
-    init {
-        viewModelScope.launch(Dispatchers.Main) {
-            ProductsApi().fetchProducts(limit = 10).collectLatest {
-                _requestState.value = it
+    private val _moviesState = MutableStateFlow<RequestState>(RequestState.Loading)
+    val moviesState: StateFlow<RequestState> = _moviesState
+
+    fun fetchMovies() {
+        viewModelScope.launch {
+            try {
+                _moviesState.value = RequestState.Loading
+
+                val result = repository.fetchPopularMovies()
+
+                result.collect { response ->
+                    _moviesState.value = response
+                }
+            } catch (e: Exception) {
+                _moviesState.value = RequestState.Error(e.localizedMessage ?: "Unknown error")
             }
         }
     }

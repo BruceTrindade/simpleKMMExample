@@ -4,12 +4,21 @@ import Shared
 struct ContentView: View {
     @StateObject
     var viewModel = HomeViewModel()
-
+    
     var body: some View {
         VStack {
-            if viewModel.response?.isSuccess() == true {
-                List(viewModel.response?.getProducts().items ?? [], id: \.id) { element in
-                    ProductView(product: element)
+            if viewModel.response?.isSuccess() == true  {
+                ScrollView {
+                    LazyVStack(spacing: 16) {
+                        ForEach(viewModel.response?.getMovies() ?? [], id: \.id) { element in
+                            MovieView(movie: element)
+                                .padding()
+                                .background(Color(.systemGray6))
+                                .cornerRadius(8)
+                                .shadow(radius: 2)
+                        }
+                    }
+                    .padding(.horizontal)
                 }
             } else if viewModel.response?.isError() == true {
                 VStack {
@@ -31,7 +40,7 @@ struct ContentView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }.task {
-            await viewModel.fetchData()
+            await viewModel.fetchMovie()
         }
     }
 }
@@ -41,8 +50,8 @@ class HomeViewModel: ObservableObject {
     private(set) var response: RequestState? = nil
     
     @MainActor
-    func fetchData() async {
-        for await requestState in ProductsApi().fetchProducts(limit: 10) {
+    func fetchMovie() async {
+        for await requestState in MoviesRepositoryImpl(moviesApi: MoviesApi()).fetchPopularMovies() {
             response = requestState
         }
     }

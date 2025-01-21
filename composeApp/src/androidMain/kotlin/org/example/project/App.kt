@@ -1,28 +1,35 @@
 package org.example.project
 
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material.MaterialTheme
-import androidx.compose.runtime.*
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.material.darkColors
+import androidx.compose.material.lightColors
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import org.example.project.home.HomeScreen
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 @Preview
 fun App() {
-    MaterialTheme {
-        HomeScreen()
-       /* var showContent by remember { mutableStateOf(false) }
-        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            Button(onClick = { showContent = !showContent }) {
-                Text("Click here!")
-            }
-            AnimatedVisibility(showContent) {
-                val greeting = remember { Greeting().greet() }
-                Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Image(painterResource(Res.drawable.compose_multiplatform), null)
-                    Text("Compose: $greeting")
-                }
-            }
+    val DarkColorPalette = darkColors(
+        primary = Color.White,
+        surface = Color.DarkGray,
+        background = Color.Black,
+        onSurface = Color.White,
+    )
 
-        }*/
+    val LightColorPalette = lightColors(
+        primary = Color.Black,
+        surface = Color.LightGray,
+        background = Color.White,
+        onSurface = Color.Black,
+    )
+
+    MaterialTheme(colors = if (isSystemInDarkTheme()) DarkColorPalette else LightColorPalette) {
+        Column {
+            HomeScreen()
+        }
     }
 }

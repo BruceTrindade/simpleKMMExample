@@ -10,53 +10,60 @@ import Foundation
 import Shared
 import SwiftUI
 
-struct ProductView: View {
-    let product: Product
-    
+struct MovieView: View {
+    let movie: Movie
+    @State private var showAlert: Bool = false
+
     var body: some View {
         VStack(alignment: .leading) {
-            AsyncImage(url: URL(string: product.image)) { imageUrl in
-                if let image = imageUrl.image {
+            AsyncImage(url: URL(string: "https://image.tmdb.org/t/p/w500\(movie.posterPath ?? "")")) { phase in
+                switch phase {
+                case .success(let image):
                     image
                         .resizable()
                         .scaledToFill()
-                        .animation(.default, value: image)
+                        .frame(maxWidth: .infinity)
+                        .clipped()
                         .accessibility(hidden: false)
                         .accessibilityLabel(Text("Product Thumbnail"))
-                } else if imageUrl.error != nil {
+                case .failure(_):
                     VStack {
                         Text("Image not available.")
                             .font(.title3)
                     }
-                } else {
-                    ProgressView().frame(maxWidth: .infinity)
+                case .empty:
+                    ProgressView()
+                        .frame(maxWidth: .infinity)
+                @unknown default:
+                    EmptyView()
                 }
             }
-            Text(product.title)
+
+            Text(movie.title ?? "")
                 .multilineTextAlignment(.leading)
                 .lineLimit(2)
                 .truncationMode(.tail)
                 .font(.title2.bold())
                 .padding(.top, 10)
-            Text(product.description_)
+
+            Text(movie.overview ?? "")
                 .multilineTextAlignment(.leading)
                 .lineLimit(6)
                 .truncationMode(.tail)
                 .font(.body)
                 .padding(.top, 5)
                 .padding(.bottom, 10)
-            HStack {
-                Text(product.category)
-                    .font(.body.italic())
-                Spacer()
-                Text("$\(String(format: "%.2f", product.price))")
-                    .font(.body.bold())
-            }
-            .padding(.vertical, 10)
-            
         }
-        
-    }
-    
-}
+        .onTapGesture {
+            showAlert = true
+        }
 
+        .alert(isPresented: $showAlert) {
+            Alert(
+                title: Text(movie.title ?? "Details").font(.title2.bold()),
+                message: Text(movie.overview ?? "No description available.").font(.body),
+                dismissButton: .default(Text("Close"))
+            )
+        }
+    }
+}
